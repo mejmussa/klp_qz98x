@@ -567,19 +567,17 @@
     }
 }
 
-@media (max-width: 991.98px) {
-    /* Framed photos (About sections): show the whole picture instead of cropping it */
-    .img-border {
-        min-height: 0;
-        height: auto;
-        padding: 3rem 0 0 3rem;
-    }
+/* Framed photos (About sections): show the whole picture instead of cropping it, on every screen size */
+.img-border {
+    min-height: 0;
+    height: auto;
+    padding: 3rem 0 0 3rem;
+}
 
-    .img-border img {
-        position: relative;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: auto;
-    }
+.img-border img {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
 }

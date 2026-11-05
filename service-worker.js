@@ -2,7 +2,7 @@
 // Pages (HTML): network first, so visitors always get the latest version; cached copy only when offline.
 // Static files (CSS, JS, fonts, images): served from cache instantly, refreshed in the background.
 // Bump VERSION whenever you want every visitor's cache cleared.
-const VERSION = "v6";
+const VERSION = "v7";
 const CACHE = "manyangwa-" + VERSION;
 
 const PRECACHE = [
