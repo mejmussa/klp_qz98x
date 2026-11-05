@@ -199,14 +199,13 @@
                     style="top: 110%; right: 0; width: 220px; display: none; z-index: 1050;">
                     <h6 class="mb-2">Choose Language</h6>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="mobile-language" id="lang-en-mobile" value="en">
+                        <input class="form-check-input" type="radio" name="mobile-language" id="lang-en-mobile" value="en" onchange="saveLanguage('mobile')">
                         <label class="form-check-label" for="lang-en-mobile">English</label>
                     </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="mobile-language" id="lang-sw-mobile" value="sw">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="mobile-language" id="lang-sw-mobile" value="sw" onchange="saveLanguage('mobile')">
                         <label class="form-check-label" for="lang-sw-mobile">Kiswahili</label>
                     </div>
-                    <button class="btn btn-primary btn-sm w-100" onclick="saveLanguage('mobile')">Save</button>
                 </div>
             </div>
 
@@ -235,19 +234,18 @@
             <!-- Desktop Language Dropdown -->
             <div class="dropdown ms-3">
                 <button class="btn btn-light dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-globe"></i> Language
+                    <i class="fas fa-globe"></i> EN
                 </button>
-                <div class="dropdown-menu p-3" aria-labelledby="languageDropdown" style="min-width: 200px;">
+                <div class="dropdown-menu dropdown-menu-end p-3" aria-labelledby="languageDropdown" style="min-width: 180px;">
                     <h6 class="dropdown-header">Choose Language</h6>
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="desktop-language" id="lang-en-desktop" value="en">
+                        <input class="form-check-input" type="radio" name="desktop-language" id="lang-en-desktop" value="en" onchange="saveLanguage('desktop')">
                         <label class="form-check-label" for="lang-en-desktop">English</label>
                     </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="radio" name="desktop-language" id="lang-sw-desktop" value="sw">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="desktop-language" id="lang-sw-desktop" value="sw" onchange="saveLanguage('desktop')">
                         <label class="form-check-label" for="lang-sw-desktop">Kiswahili</label>
                     </div>
-                    <button class="btn btn-primary btn-sm w-100" onclick="saveLanguage('desktop')">Save</button>
                 </div>
             </div>
         </div>
@@ -545,22 +543,21 @@
     function saveLanguage(source) {
         const name = source === 'mobile' ? 'mobile-language' : 'desktop-language';
         const selectedLang = document.querySelector(`input[name="${name}"]:checked`)?.value;
-
         if (!selectedLang) return;
 
-        localStorage.setItem('siteLang', selectedLang);
-        toastr.success("Language saved successfully", "Success");
+        try { localStorage.setItem('siteLang', selectedLang); } catch (e) {}
 
-        // Close mobile dropdown if open
-        const mobileLangDropdown = document.getElementById('mobileLangDropdown');
-        if (mobileLangDropdown && source === 'mobile') {
-            mobileLangDropdown.style.display = 'none';
+        // Go to the same page in the chosen language (about.html <-> sw-about.html)
+        const file = window.location.pathname.split('/').pop() || 'index.html';
+        const base = file.replace(/^sw-/, '');
+        const target = selectedLang === 'sw' ? 'sw-' + base : base;
+
+        if (target !== file) {
+            window.location.href = target;
+        } else {
+            const mobileLangDropdown = document.getElementById('mobileLangDropdown');
+            if (mobileLangDropdown) mobileLangDropdown.style.display = 'none';
         }
-
-        // Redirect after short delay
-        setTimeout(() => {
-            window.location.href = selectedLang === 'sw' ? 'sw-404.html' : '404.html';
-        }, 1000);
     }
 
     window.addEventListener('load', function () {
