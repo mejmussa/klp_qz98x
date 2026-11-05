@@ -6,7 +6,7 @@
     var form = document.getElementById("contact-form");
     if (!form) return;
 
-    var WEB3FORMS_KEY = "62cc82d7-9ce3-4e58-b434-b1c17ad179cc"; // public key, safe in page code
+    var WEB3FORMS_KEY = "a770b792-77cf-40de-9766-4e53cce9b6bd"; // public key, safe in page code
     var WEB3FORMS_URL = "https://api.web3forms.com/submit";
     var FORMSUBMIT_URL = "https://formsubmit.co/ajax/manyangwaemails@gmail.com";
     var WHATSAPP = "https://wa.me/255767484562";

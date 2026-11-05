@@ -18,7 +18,7 @@ Company website for **Manyangwa Co. Ltd**, a Tanzanian manufacturer of Skim Coat
 | HTTPS | GitHub Pages certificate covering `manyangwa.co.tz` and `www.manyangwa.co.tz`; "Enforce HTTPS" is on |
 | Phone / WhatsApp | **+255 767 484 562** |
 | Public email shown on site | info@manyangwa.co.tz |
-| Contact form service (main) | **Web3Forms**, account `mejmussa@gmail.com` |
+| Contact form service (main) | **Web3Forms**, form "manyangwa.co.tz", sends to `manyangwaemails@gmail.com` |
 | Contact form service (backup) | FormSubmit, sends to `manyangwaemails@gmail.com` |
 
 ---
@@ -45,9 +45,10 @@ Also built in:
 | Setting | Value |
 |---|---|
 | Website | https://web3forms.com (dashboard: https://app.web3forms.com) |
-| Account / login email | `mejmussa@gmail.com` |
-| Access key | `62cc82d7-9ce3-4e58-b434-b1c17ad179cc` |
-| Messages delivered to | `mejmussa@gmail.com` (the account email) |
+| Account / login email | `manyangwaemails@gmail.com` |
+| Form name | `manyangwa.co.tz` |
+| Access key | `a770b792-77cf-40de-9766-4e53cce9b6bd` |
+| Messages delivered to | `manyangwaemails@gmail.com` |
 | Free plan limit | 250 submissions per month |
 | Email subject | `New website message from <visitor name>` |
 | Fields sent | name, email, phone, message, page |
@@ -59,7 +60,7 @@ The access key is **public by design**. Web3Forms intends it to sit in website c
 **To use a new access key:** edit this line in `js/contact-form.js`:
 
 ```js
-var WEB3FORMS_KEY = "62cc82d7-9ce3-4e58-b434-b1c17ad179cc";
+var WEB3FORMS_KEY = "a770b792-77cf-40de-9766-4e53cce9b6bd";
 ```
 
 ### FormSubmit (backup service)
@@ -85,7 +86,7 @@ FormSubmit was unreliable in November 2026: its servers returned "522" errors. T
 ### Testing the form
 
 1. Open https://www.manyangwa.co.tz/contact.html and send a real message.
-2. Check the inbox (currently `mejmussa@gmail.com`). If nothing arrives, check **Spam** and mark the message "Not spam".
+2. Check the inbox (`manyangwaemails@gmail.com`). If nothing arrives, check **Spam** and mark the message "Not spam".
 3. Automated "headless" browsers are blocked by Web3Forms' security, so test in a normal browser.
 
 ---
