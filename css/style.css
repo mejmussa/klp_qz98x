@@ -517,3 +517,69 @@
         font-size: 26px;
     }
 }
+
+
+/*** Mobile polish ***/
+
+/* Page header breadcrumb: readable white text on the dark photo */
+.page-header .breadcrumb-item a {
+    color: rgba(255, 255, 255, .85) !important;
+}
+
+.page-header .breadcrumb-item a:hover {
+    color: #FFFFFF !important;
+}
+
+.page-header .breadcrumb-item.active {
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    /* Hero slider: smaller heading, darker overlay so text stands out from the image */
+    #header-carousel .carousel-item {
+        min-height: 440px;
+    }
+
+    #header-carousel .carousel-caption {
+        background: rgba(0, 0, 0, .65);
+        padding-bottom: 70px; /* keep text clear of the round thumbnails */
+    }
+
+    #header-carousel .carousel-caption .display-1 {
+        font-size: 2.1rem;
+        line-height: 1.2;
+    }
+
+    #header-carousel .carousel-caption h4 {
+        font-size: 1rem;
+        margin-bottom: .75rem !important;
+    }
+
+    #header-carousel .carousel-caption p {
+        font-size: .9rem;
+        margin-top: .75rem;
+    }
+
+    #header-carousel .carousel-indicators [data-bs-target] {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    /* Framed photos (About sections): show the whole picture instead of cropping it */
+    .img-border {
+        min-height: 0;
+        height: auto;
+        padding: 3rem 0 0 3rem;
+    }
+
+    .img-border img {
+        position: relative;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: auto;
+    }
+}
