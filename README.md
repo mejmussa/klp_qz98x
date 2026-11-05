@@ -198,6 +198,5 @@ Everything loads from the site itself. Nothing comes from outside CDNs except th
 ## 9. Known to-dos
 
 - Social media icons in the top bar (Facebook, Twitter, LinkedIn, Instagram) have empty links (`href=""`). Add the real profile URLs.
-- The breadcrumb links under page titles use `text-secondary` and are hard to read on the dark header.
 - Unused images such as `testimonial-2.jpg` and `testimonial-7.jpg`, and unused libraries (`lib/animate`, `lib/wow`), can be removed.
 - Optional: set up free uptime monitoring (for example UptimeRobot) to get an email if the site goes down.
