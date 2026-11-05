@@ -1,12 +1,14 @@
-// Contact form: instant feedback, no double sends, timeout with WhatsApp fallback.
+// Contact form: instant feedback, no double sends, backup service, WhatsApp as last resort.
+// 1) Web3Forms (main)  2) FormSubmit (backup)  3) WhatsApp link with the message prefilled
 (function () {
     "use strict";
 
     var form = document.getElementById("contact-form");
     if (!form) return;
 
-    var ENDPOINT = "https://formsubmit.co/ajax/manyangwaemails@gmail.com";
-    var TIMEOUT_MS = 15000;
+    var WEB3FORMS_KEY = "62cc82d7-9ce3-4e58-b434-b1c17ad179cc"; // public key, safe in page code
+    var WEB3FORMS_URL = "https://api.web3forms.com/submit";
+    var FORMSUBMIT_URL = "https://formsubmit.co/ajax/manyangwaemails@gmail.com";
     var WHATSAPP = "https://wa.me/255767484562";
 
     var sw = (document.documentElement.lang || "").toLowerCase().indexOf("sw") === 0;
@@ -14,7 +16,6 @@
         sending: "Inatuma...",
         sent: "Ujumbe umetumwa kikamilifu! Tutawasiliana nawe hivi karibuni.",
         failed: "Samahani, huduma ya ujumbe haipatikani kwa sasa. Ujumbe wako bado upo, tuma kupitia WhatsApp:",
-        timeout: "Samahani, huduma ya ujumbe haijibu kwa sasa. Ujumbe wako bado upo, tuma kupitia WhatsApp:",
         offline: "Hakuna mtandao. Tafadhali angalia muunganisho wako.",
         whatsapp: "Tuma ujumbe huu WhatsApp",
         intro: "Habari Manyangwa, jina langu ni ",
@@ -23,33 +24,46 @@
         sending: "Sending...",
         sent: "Message sent successfully! We will get back to you soon.",
         failed: "Sorry, our message service is unavailable right now. Your message is still here, send it on WhatsApp:",
-        timeout: "Sorry, our message service is not responding right now. Your message is still here, send it on WhatsApp:",
         offline: "You are offline. Please check your connection.",
         whatsapp: "Send this message on WhatsApp",
         intro: "Hello Manyangwa, my name is ",
         phone: "Phone", email: "Email", message: "Message"
     };
 
-    // WhatsApp link with the visitor's form details already typed in
-    function whatsappWithMessage(data) {
-        var text = t.intro + (data.get("name") || "") + ".\n" +
-            t.phone + ": " + (data.get("phone") || "") + "\n" +
-            t.email + ": " + (data.get("email") || "") + "\n" +
-            t.message + ": " + (data.get("message") || "");
-        return WHATSAPP + "?text=" + encodeURIComponent(text);
-    }
+    // Hidden spam trap: real people never tick it, bots often do
+    var trap = document.createElement("input");
+    trap.type = "checkbox";
+    trap.name = "botcheck";
+    trap.tabIndex = -1;
+    trap.autocomplete = "off";
+    trap.setAttribute("aria-hidden", "true");
+    trap.style.display = "none";
+    form.appendChild(trap);
 
     var button = form.querySelector('button[type="submit"]');
     var buttonHtml = button ? button.innerHTML : "";
     var busy = false;
 
-    function notify(type, text, withWhatsApp, waUrl) {
+    function field(name) {
+        var el = form.elements[name];
+        return el ? String(el.value || "").trim() : "";
+    }
+
+    function whatsappWithMessage() {
+        var text = t.intro + field("name") + ".\n" +
+            t.phone + ": " + field("phone") + "\n" +
+            t.email + ": " + field("email") + "\n" +
+            t.message + ": " + field("message");
+        return WHATSAPP + "?text=" + encodeURIComponent(text);
+    }
+
+    function notify(type, text, waUrl) {
         var html = text;
-        if (withWhatsApp) {
-            html += '<br><a href="' + (waUrl || WHATSAPP) + '" target="_blank" rel="noopener" style="text-decoration:underline;font-weight:600">' + t.whatsapp + "</a>";
+        if (waUrl) {
+            html += '<br><a href="' + waUrl + '" target="_blank" rel="noopener" style="text-decoration:underline;font-weight:600">' + t.whatsapp + "</a>";
         }
         if (window.toastr) {
-            window.toastr[type](html, "", withWhatsApp ? { timeOut: 0, extendedTimeOut: 0, closeButton: true, tapToDismiss: false } : {});
+            window.toastr[type](html, "", waUrl ? { timeOut: 0, extendedTimeOut: 0, closeButton: true, tapToDismiss: false } : {});
         } else {
             alert(text);
         }
@@ -64,46 +78,74 @@
             : buttonHtml;
     }
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        if (busy) return;
-
-        if (!navigator.onLine) {
-            notify("error", t.offline, true);
-            return;
-        }
-
-        var data = new FormData(form);
-        data.append("_subject", "New website message from " + (data.get("name") || "a visitor"));
-        data.append("_template", "table");
-        data.append("_captcha", "false");
-
+    // POST with a time limit; resolves true only when the service confirms success
+    function post(url, body, timeoutMs) {
         var controller = window.AbortController ? new AbortController() : null;
-        var timer = setTimeout(function () { if (controller) controller.abort(); }, TIMEOUT_MS);
-
-        setBusy(true);
-
-        fetch(ENDPOINT, {
+        var timer = setTimeout(function () { if (controller) controller.abort(); }, timeoutMs);
+        return fetch(url, {
             method: "POST",
             headers: { "Accept": "application/json" },
-            body: data,
+            body: body,
             signal: controller ? controller.signal : undefined
         })
             .then(function (res) {
                 return res.json().catch(function () { return {}; }).then(function (json) {
-                    if (res.ok && String(json.success) !== "false") {
-                        notify("success", t.sent, false);
-                        form.reset();
-                    } else {
-                        notify("error", t.failed, true, whatsappWithMessage(data));
-                    }
+                    return res.ok && json.success !== false && String(json.success) !== "false";
                 });
             })
-            .catch(function (err) {
-                notify("error", err && err.name === "AbortError" ? t.timeout : t.failed, true, whatsappWithMessage(data));
+            .catch(function () { return false; })
+            .then(function (ok) { clearTimeout(timer); return ok; });
+    }
+
+    function web3formsData() {
+        var d = new FormData();
+        d.append("access_key", WEB3FORMS_KEY);
+        d.append("subject", "New website message from " + (field("name") || "a visitor"));
+        d.append("from_name", "Manyangwa Website");
+        d.append("name", field("name"));
+        d.append("email", field("email"));
+        d.append("phone", field("phone"));
+        d.append("message", field("message"));
+        d.append("page", window.location.pathname);
+        return d;
+    }
+
+    function formsubmitData() {
+        var d = new FormData();
+        d.append("name", field("name"));
+        d.append("email", field("email"));
+        d.append("phone", field("phone"));
+        d.append("message", field("message"));
+        d.append("_subject", "New website message from " + (field("name") || "a visitor"));
+        d.append("_template", "table");
+        d.append("_captcha", "false");
+        return d;
+    }
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (busy) return;
+
+        if (trap.checked) { form.reset(); return; } // bot: silently drop
+
+        if (!navigator.onLine) {
+            notify("error", t.offline);
+            return;
+        }
+
+        setBusy(true);
+
+        post(WEB3FORMS_URL, web3formsData(), 12000)
+            .then(function (ok) {
+                return ok || post(FORMSUBMIT_URL, formsubmitData(), 8000);
             })
-            .then(function () {
-                clearTimeout(timer);
+            .then(function (ok) {
+                if (ok) {
+                    notify("success", t.sent);
+                    form.reset();
+                } else {
+                    notify("error", t.failed, whatsappWithMessage());
+                }
                 setBusy(false);
             });
     });
