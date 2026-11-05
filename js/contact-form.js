@@ -13,30 +13,43 @@
     var t = sw ? {
         sending: "Inatuma...",
         sent: "Ujumbe umetumwa kikamilifu! Tutawasiliana nawe hivi karibuni.",
-        failed: "Ujumbe haukutumwa. Tafadhali jaribu tena au tuandikie WhatsApp.",
-        timeout: "Mtandao ni wa polepole. Tafadhali jaribu tena au tuandikie WhatsApp.",
+        failed: "Samahani, huduma ya ujumbe haipatikani kwa sasa. Ujumbe wako bado upo, tuma kupitia WhatsApp:",
+        timeout: "Samahani, huduma ya ujumbe haijibu kwa sasa. Ujumbe wako bado upo, tuma kupitia WhatsApp:",
         offline: "Hakuna mtandao. Tafadhali angalia muunganisho wako.",
-        whatsapp: "Tuandikie WhatsApp"
+        whatsapp: "Tuma ujumbe huu WhatsApp",
+        intro: "Habari Manyangwa, jina langu ni ",
+        phone: "Simu", email: "Barua pepe", message: "Ujumbe"
     } : {
         sending: "Sending...",
         sent: "Message sent successfully! We will get back to you soon.",
-        failed: "Your message could not be sent. Please try again or message us on WhatsApp.",
-        timeout: "The connection is slow. Please try again or message us on WhatsApp.",
+        failed: "Sorry, our message service is unavailable right now. Your message is still here, send it on WhatsApp:",
+        timeout: "Sorry, our message service is not responding right now. Your message is still here, send it on WhatsApp:",
         offline: "You are offline. Please check your connection.",
-        whatsapp: "Message us on WhatsApp"
+        whatsapp: "Send this message on WhatsApp",
+        intro: "Hello Manyangwa, my name is ",
+        phone: "Phone", email: "Email", message: "Message"
     };
+
+    // WhatsApp link with the visitor's form details already typed in
+    function whatsappWithMessage(data) {
+        var text = t.intro + (data.get("name") || "") + ".\n" +
+            t.phone + ": " + (data.get("phone") || "") + "\n" +
+            t.email + ": " + (data.get("email") || "") + "\n" +
+            t.message + ": " + (data.get("message") || "");
+        return WHATSAPP + "?text=" + encodeURIComponent(text);
+    }
 
     var button = form.querySelector('button[type="submit"]');
     var buttonHtml = button ? button.innerHTML : "";
     var busy = false;
 
-    function notify(type, text, withWhatsApp) {
+    function notify(type, text, withWhatsApp, waUrl) {
         var html = text;
         if (withWhatsApp) {
-            html += '<br><a href="' + WHATSAPP + '" target="_blank" rel="noopener" style="text-decoration:underline">' + t.whatsapp + "</a>";
+            html += '<br><a href="' + (waUrl || WHATSAPP) + '" target="_blank" rel="noopener" style="text-decoration:underline;font-weight:600">' + t.whatsapp + "</a>";
         }
         if (window.toastr) {
-            window.toastr[type](html, "", withWhatsApp ? { timeOut: 10000, extendedTimeOut: 5000 } : {});
+            window.toastr[type](html, "", withWhatsApp ? { timeOut: 0, extendedTimeOut: 0, closeButton: true, tapToDismiss: false } : {});
         } else {
             alert(text);
         }
@@ -82,12 +95,12 @@
                         notify("success", t.sent, false);
                         form.reset();
                     } else {
-                        notify("error", t.failed, true);
+                        notify("error", t.failed, true, whatsappWithMessage(data));
                     }
                 });
             })
             .catch(function (err) {
-                notify("error", err && err.name === "AbortError" ? t.timeout : t.failed, true);
+                notify("error", err && err.name === "AbortError" ? t.timeout : t.failed, true, whatsappWithMessage(data));
             })
             .then(function () {
                 clearTimeout(timer);
